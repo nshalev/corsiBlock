@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corsi Block Test</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a22;
+    --surface2: #22222e;
+    --border: #2e2e3e;
+    --accent: #7c6aff;
+    --accent2: #ff6a8a;
+    --text: #e8e8f0;
+    --text-muted: #7a7a9a;
+    --block-idle: #252535;
+    --block-hover: #2e2e45;
+    --block-active: #7c6aff;
+    --block-correct: #4ade80;
+    --block-wrong: #ff6a8a;
+    --block-border: #3a3a50;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .screen { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100vw; min-height: 100vh; padding: 2rem; }
+  .screen.active { display: flex; }
+
+  /* SETUP */
+  .setup-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 500px;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+
+  .logo { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 1.5rem; }
+  h1 { font-size: 1.8rem; font-weight: 600; margin-bottom: 0.4rem; line-height: 1.2; }
+  .subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; }
+
+  .section-divider {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    margin: 1.2rem 0 1rem;
+  }
+
+  .field { margin-bottom: 1.2rem; }
+  .field label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+  .field-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; opacity: 0.7; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .field input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.65rem 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus { border-color: var(--accent); }
+
+  .toggle-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .toggle-btn {
+    flex: 1; min-width: 80px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    padding: 0.6rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    user-select: none;
+  }
+  .toggle-btn.selected { background: color-mix(in srgb, var(--accent) 15%, var(--surface2)); border-color: var(--accent); color: var(--text); }
+
+  .slider-row { display: flex; align-items: center; gap: 0.8rem; }
+  .slider-row input[type=range] {
+    flex: 1; -webkit-appearance: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    height: 6px; outline: none; padding: 0; cursor: pointer;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  .slider-val { font-family: 'DM Mono', monospace; font-size: 0.9rem; color: var(--accent); min-width: 60px; text-align: right; }
+
+  .btn-primary {
+    width: 100%; background: var(--accent); border: none; border-radius: 8px;
+    color: #fff; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600;
+    padding: 0.85rem; cursor: pointer; margin-top: 1.5rem;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:active { transform: scale(0.98); }
+
+  /* INSTRUCTION */
+  .instruction-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 2.5rem; max-width: 500px; width: 100%; text-align: center;
+  }
+  .instruction-card h2 { font-size: 1.4rem; margin-bottom: 1rem; }
+  .instruction-card p { color: var(--text-muted); line-height: 1.7; margin-bottom: 1rem; font-size: 0.95rem; }
+  .mode-badge { display: inline-block; border-radius: 20px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; padding: 0.25rem 0.9rem; text-transform: uppercase; margin-bottom: 1.5rem; }
+  .param-pills { display: flex; justify-content: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .param-pill { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; font-size: 0.75rem; font-family: 'DM Mono', monospace; color: var(--text-muted); padding: 0.25rem 0.75rem; }
+
+  /* TASK */
+  #task-screen {
+    padding: 0;
+    gap: 0;
+    justify-content: flex-start;
+  }
+
+  .task-top-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .hud { display: flex; gap: 1.5rem; font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.05em; }
+  .hud span { display: flex; align-items: center; gap: 0.4rem; }
+  .hud strong { font-size: 1rem; color: var(--text); font-weight: 500; }
+
+  .top-bar-right { display: flex; align-items: center; gap: 0.75rem; }
+
+  .mode-indicator {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem; letter-spacing: 0.15em;
+    text-transform: uppercase; padding: 0.3rem 0.9rem; border-radius: 20px;
+    border: 1px solid var(--border); color: var(--text-muted); transition: all 0.4s;
+  }
+  .mode-indicator.forward { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .mode-indicator.backward { border-color: var(--accent2); color: var(--accent2); background: color-mix(in srgb, var(--accent2) 10%, transparent); }
+
+  /* EXIT BUTTON */
+  .btn-exit {
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--accent2) 50%, var(--border));
+    border-radius: 8px;
+    color: var(--accent2);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-exit:hover {
+    background: color-mix(in srgb, var(--accent2) 12%, transparent);
+    border-color: var(--accent2);
+  }
+
+  /* EXIT CONFIRM OVERLAY */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .overlay.active { display: flex; }
+
+  .confirm-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+  }
+  .confirm-card h3 { font-size: 1.2rem; margin-bottom: 0.6rem; }
+  .confirm-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.6; }
+  .confirm-buttons { display: flex; gap: 0.75rem; }
+  .confirm-buttons button { flex: 1; padding: 0.75rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; border: none; }
+  .btn-confirm-exit { background: var(--accent2); color: #fff; font-weight: 600; }
+  .btn-confirm-exit:hover { opacity: 0.85; }
+  .btn-confirm-cancel { background: var(--surface2); color: var(--text); border: 1px solid var(--border) !important; }
+  .btn-confirm-cancel:hover { border-color: var(--accent) !important; }
+
+  .status-bar {
+    width: 100%;
+    text-align: center;
+    padding: 0.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    min-height: 2rem;
+    transition: color 0.3s;
+  }
+  .status-bar.correct { color: var(--block-correct); }
+  .status-bar.wrong { color: var(--block-wrong); }
+
+  #board {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .block {
+    position: absolute;
+    background: var(--block-idle);
+    border: 1px solid var(--block-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s, border-color 0.15s;
+  }
+  .block:hover { background: var(--block-hover); transform: scale(1.06); }
+  .block.lit { background: var(--block-active); border-color: var(--accent); transform: scale(1.1); box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 50%, transparent); }
+  .block.clicked-correct { background: var(--block-correct); border-color: var(--block-correct); }
+  .block.clicked-wrong { background: var(--block-wrong); border-color: var(--block-wrong); }
+  .block.disabled { pointer-events: none; }
+
+  /* RESULTS */
+  .results-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; max-width: 480px; width: 100%; text-align: center; }
+  .results-card h2 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+  .results-card .thankyou { color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem; }
+  .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+  .score-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+  .score-box .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem; }
+  .score-box .value { font-family: 'DM Mono', monospace; font-size: 1.8rem; color: var(--accent); font-weight: 500; }
+  .btn-secondary { width: 100%; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; padding: 0.8rem; cursor: pointer; margin-top: 0.75rem; transition: border-color 0.2s, background 0.2s; }
+  .btn-secondary:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+</style>
+</head>
+<body>
+
+<!-- EXIT CONFIRMATION OVERLAY -->
+<div class="overlay" id="exit-overlay">
+  <div class="confirm-card">
+    <h3>End Session Early?</h3>
+    <p>This will terminate the task and download the data collected so far for <strong id="exit-pid"></strong>.</p>
+    <div class="confirm-buttons">
+      <button class="btn-confirm-exit" onclick="confirmExit()">Save & Exit</button>
+      <button class="btn-confirm-cancel" onclick="cancelExit()">Keep Going</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="setup-screen" class="screen active">
+  <div class="setup-card">
+    <div class="logo">ShalevLab: CorsiBlock</div>
+    <h1>Corsi Block Test</h1>
+    <p class="subtitle">Visuospatial working memory assessment</p>
+
+    <div class="section-divider">Participant</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Participant ID</label>
+        <input type="text" id="participant-id" placeholder="e.g. P001" />
+      </div>
+      <div class="field">
+        <label>Session / Condition</label>
+        <input type="text" id="session-id" placeholder="e.g. Baseline" />
+      </div>
+    </div>
+
+    <div class="section-divider">Task Settings</div>
+    <div class="field">
+      <label>Task Version</label>
+      <div class="toggle-group">
+        <div class="toggle-btn selected" data-val="both" onclick="selectToggle(this,'version')">Forward + Backward</div>
+        <div class="toggle-btn" data-val="forward" onclick="selectToggle(this,'version')">Forward Only</div>
+        <div class="toggle-btn" data-val="backward" onclick="selectToggle(this,'version')">Backward Only</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>End Screen</label>
+      <div class="toggle-group">
+        <div class="toggle-btn selected" data-val="score" onclick="selectToggle(this,'endscreen')">Show Score</div>
+        <div class="toggle-btn" data-val="thankyou" onclick="selectToggle(this,'endscreen')">Thank You Only</div>
+      </div>
+    </div>
+
+    <div class="section-divider">Stimulus Parameters</div>
+    <div class="field">
+      <label>Perceptual Load — Number of Blocks</label>
+      <div class="slider-row">
+        <input type="range" id="load-slider" min="12" max="24" step="1" value="12"
+          oninput="document.getElementById('load-val').textContent = this.value + ' blocks'" />
+        <span class="slider-val" id="load-val">12 blocks</span>
+      </div>
+      <div class="field-hint">Higher = more blocks visible = greater perceptual load. Range: 12–24.</div>
+    </div>
+    <div class="field">
+      <label>Highlight Duration — How long each block stays lit</label>
+      <div class="slider-row">
+        <input type="range" id="duration-slider" min="200" max="1200" step="100" value="600"
+          oninput="document.getElementById('duration-val').textContent = this.value + ' ms'" />
+        <span class="slider-val" id="duration-val">600 ms</span>
+      </div>
+      <div class="field-hint">Shorter = harder. Range: 200–1200 ms.</div>
+    </div>
+
+    <button class="btn-primary" onclick="startSetup()">Begin Task →</button>
+  </div>
+</div>
+
+<!-- INSTRUCTION -->
+<div id="instruction-screen" class="screen">
+  <div class="instruction-card">
+    <div class="mode-badge" id="instr-badge">Forward Span</div>
+    <h2 id="instr-title">Remember the sequence</h2>
+    <p id="instr-body"></p>
+    <div class="param-pills" id="param-pills"></div>
+    <button class="btn-primary" onclick="startBlock()">I'm ready →</button>
+  </div>
+</div>
+
+<!-- TASK -->
+<div id="task-screen" class="screen">
+  <div class="task-top-bar">
+    <div class="hud">
+      <span>SPAN <strong id="hud-span">2</strong></span>
+      <span>TRIAL <strong id="hud-trial">1</strong></span>
+      <span>CORRECT <strong id="hud-correct">0</strong></span>
+    </div>
+    <div class="top-bar-right">
+      <div class="mode-indicator" id="mode-indicator">Forward</div>
+      <button class="btn-exit" onclick="requestExit()">■ Exit</button>
+    </div>
+  </div>
+  <div class="status-bar" id="status-msg">Watch the sequence…</div>
+  <div id="board"></div>
+</div>
+
+<!-- RESULTS -->
+<div id="results-screen" class="screen">
+  <div class="results-card">
+    <h2>Task Complete</h2>
+    <p class="thankyou" id="results-subtitle">Thank you for participating.</p>
+    <div class="score-grid" id="score-grid"></div>
+    <button class="btn-primary" onclick="downloadCSV()">⬇ Download Data (CSV)</button>
+    <button class="btn-secondary" onclick="location.reload()">New Participant</button>
+  </div>
+</div>
+
+<script>
+const RESPONSE_FLASH = 400;
+let config = {};
+let toggleState = { version: 'both', endscreen: 'score' };
+let phase, span, trialInSpan, correctInRow, consecutiveErrors;
+let totalCorrect, trialNumber, currentSequence, playerInput;
+let blockElements = [], activePositions = [];
+let isAcceptingInput = false;
+let log = [], forwardSpan = 0, backwardSpan = 0;
+
+// ── TOGGLE ────────────────────────────────────────────────────────────────────
+function selectToggle(el, group) {
+  el.closest('.toggle-group').querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  toggleState[group] = el.dataset.val;
+}
+
+// ── POSITION GENERATOR ───────────────────────────────────────────────────────
+function generatePositions(n, boardW, boardH, blockSize, margin) {
+  const minDist = blockSize + margin;
+  const positions = [];
+  const maxAttempts = 2000;
+  let attempts = 0;
+
+  while (positions.length < n && attempts < maxAttempts) {
+    attempts++;
+    const x = Math.random() * (boardW - blockSize);
+    const y = Math.random() * (boardH - blockSize);
+    const overlaps = positions.some(p =>
+      Math.abs(p.x - x) < minDist && Math.abs(p.y - y) < minDist
+    );
+    if (!overlaps) positions.push({ x, y });
+  }
+
+  if (positions.length < n) {
+    const cols = Math.ceil(Math.sqrt(n));
+    const cellW = boardW / cols;
+    const cellH = boardH / Math.ceil(n / cols);
+    for (let i = positions.length; i < n; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      positions.push({
+        x: col * cellW + (cellW - blockSize) / 2,
+        y: row * cellH + (cellH - blockSize) / 2,
+      });
+    }
+  }
+
+  return positions;
+}
+
+// ── SETUP ─────────────────────────────────────────────────────────────────────
+function startSetup() {
+  const pid = document.getElementById('participant-id').value.trim();
+  if (!pid) { alert('Please enter a Participant ID.'); return; }
+
+  const litDuration = parseInt(document.getElementById('duration-slider').value);
+  const numBlocks   = parseInt(document.getElementById('load-slider').value);
+
+  config = {
+    participantId: pid,
+    session: document.getElementById('session-id').value.trim() || '—',
+    version: toggleState.version,
+    endscreen: toggleState.endscreen,
+    numBlocks,
+    litDuration,
+    litInterval: litDuration + 300,
+  };
+
+  phase = config.version === 'backward' ? 'backward' : 'forward';
+  span = 2; trialInSpan = 0; correctInRow = 0; consecutiveErrors = 0;
+  totalCorrect = 0; trialNumber = 0; log = [];
+  forwardSpan = 0; backwardSpan = 0;
+
+  showInstructions();
+}
+
+// ── SCREENS ───────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showInstructions() {
+  const badge = document.getElementById('instr-badge');
+  const title = document.getElementById('instr-title');
+  const body  = document.getElementById('instr-body');
+  const pills = document.getElementById('param-pills');
+
+  if (phase === 'forward') {
+    badge.textContent = 'Forward Span';
+    badge.style.cssText = 'border:1px solid #7c6aff;color:#7c6aff;background:color-mix(in srgb,#7c6aff 15%,transparent)';
+    title.textContent = 'Remember the sequence';
+    body.textContent = 'Blocks will light up one at a time. After the sequence ends, click them in the SAME ORDER. The sequence gets longer as you go.';
+  } else {
+    badge.textContent = 'Backward Span';
+    badge.style.cssText = 'border:1px solid #ff6a8a;color:#ff6a8a;background:color-mix(in srgb,#ff6a8a 15%,transparent)';
+    title.textContent = 'Now in reverse';
+    body.textContent = 'Same task — but click the blocks in REVERSE ORDER. If blocks lit up 1→2→3, click 3→2→1.';
+  }
+
+  pills.innerHTML = `
+    <span class="param-pill">${config.numBlocks} blocks</span>
+    <span class="param-pill">${config.litDuration} ms highlight</span>
+    <span class="param-pill">${config.version}</span>
+  `;
+  showScreen('instruction-screen');
+}
+
+// ── BOARD ─────────────────────────────────────────────────────────────────────
+function buildBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  blockElements = [];
+
+  const boardW = board.offsetWidth;
+  const boardH = board.offsetHeight;
+  const blockSize = Math.round(Math.max(38, 68 - config.numBlocks * 1.2));
+  const margin = 10;
+
+  activePositions = generatePositions(config.numBlocks, boardW, boardH, blockSize, margin);
+
+  activePositions.forEach((pos, i) => {
+    const el = document.createElement('div');
+    el.className = 'block disabled';
+    el.style.width  = blockSize + 'px';
+    el.style.height = blockSize + 'px';
+    el.style.left   = Math.round(pos.x) + 'px';
+    el.style.top    = Math.round(pos.y) + 'px';
+    el.addEventListener('click', () => onBlockClick(i));
+    board.appendChild(el);
+    blockElements.push(el);
+  });
+}
+
+// ── TRIAL LOGIC ───────────────────────────────────────────────────────────────
+function startBlock() {
+  showScreen('task-screen');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      buildBoard();
+      updateHUD();
+      newTrial();
+    });
+  });
+}
+
+function newTrial() {
+  trialNumber++;
+  trialInSpan++;
+  playerInput = [];
+  currentSequence = generateSequence(span);
+  setStatus('Watch the sequence…', '');
+  disableBlocks();
+  setTimeout(() => playSequence(), 800);
+}
+
+function generateSequence(len) {
+  const seq = [];
+  let last = -1;
+  for (let i = 0; i < len; i++) {
+    let next;
+    do { next = Math.floor(Math.random() * config.numBlocks); } while (next === last);
+    seq.push(next);
+    last = next;
+  }
+  return seq;
+}
+
+function playSequence() {
+  let i = 0;
+  function showNext() {
+    if (i > 0) blockElements[currentSequence[i-1]].classList.remove('lit');
+    if (i < currentSequence.length) {
+      blockElements[currentSequence[i]].classList.add('lit');
+      i++;
+      setTimeout(showNext, config.litInterval);
+    } else {
+      setStatus(phase === 'forward' ? 'Tap the blocks in order' : 'Tap the blocks in REVERSE order', '');
+      enableBlocks();
+    }
+  }
+  showNext();
+}
+
+function enableBlocks()  { isAcceptingInput = true;  blockElements.forEach(b => b.classList.remove('disabled')); }
+function disableBlocks() { isAcceptingInput = false; blockElements.forEach(b => b.classList.add('disabled')); }
+
+function onBlockClick(idx) {
+  if (!isAcceptingInput) return;
+  playerInput.push(idx);
+  const pos = playerInput.length - 1;
+  const expected = phase === 'forward'
+    ? currentSequence[pos]
+    : currentSequence[currentSequence.length - 1 - pos];
+
+  if (idx !== expected) {
+    blockElements[idx].classList.add('clicked-wrong');
+    disableBlocks();
+    setTimeout(() => { blockElements[idx].classList.remove('clicked-wrong'); handleTrialEnd(false); }, RESPONSE_FLASH);
+  } else {
+    blockElements[idx].classList.add('clicked-correct');
+    setTimeout(() => blockElements[idx].classList.remove('clicked-correct'), RESPONSE_FLASH);
+    if (playerInput.length === currentSequence.length) {
+      disableBlocks();
+      setTimeout(() => handleTrialEnd(true), RESPONSE_FLASH + 100);
+    }
+  }
+}
+
+function handleTrialEnd(correct) {
+  const target = phase === 'forward' ? [...currentSequence] : [...currentSequence].reverse();
+  logTrial(correct, target);
+
+  if (correct) {
+    consecutiveErrors = 0; correctInRow++; totalCorrect++;
+    setStatus('✓ Correct', 'correct');
+    if (correctInRow >= 2) { span++; trialInSpan = 0; correctInRow = 0; }
+  } else {
+    correctInRow = 0; consecutiveErrors++;
+    setStatus('✗ Incorrect', 'wrong');
+    if (consecutiveErrors >= 2) { setTimeout(() => endPhase(), 900); return; }
+  }
+  updateHUD();
+  setTimeout(() => newTrial(), 1000);
+}
+
+function endPhase() {
+  if (phase === 'forward') {
+    forwardSpan = span;
+    if (config.version === 'both') {
+      phase = 'backward';
+      span = 2; trialInSpan = 0; correctInRow = 0; consecutiveErrors = 0;
+      showInstructions();
+    } else { showResults(); }
+  } else {
+    backwardSpan = span;
+    showResults();
+  }
+}
+
+// ── EXIT HANDLING ─────────────────────────────────────────────────────────────
+function requestExit() {
+  // Pause input while overlay is shown
+  isAcceptingInput = false;
+  document.getElementById('exit-pid').textContent = config.participantId || 'this participant';
+  document.getElementById('exit-overlay').classList.add('active');
+}
+
+function cancelExit() {
+  document.getElementById('exit-overlay').classList.remove('active');
+  // Re-enable input only if we were in response phase
+  // (sequence playback will re-enable naturally if mid-sequence)
+  isAcceptingInput = true;
+}
+
+function confirmExit() {
+  document.getElementById('exit-overlay').classList.remove('active');
+  // Download whatever data has been collected so far
+  downloadCSV(true);
+  // Return to setup screen after a brief delay to allow download to trigger
+  setTimeout(() => location.reload(), 300);
+}
+
+// ── LOGGING ───────────────────────────────────────────────────────────────────
+function logTrial(correct, target) {
+  log.push({
+    participant_id:        config.participantId,
+    session:               config.session,
+    timestamp:             new Date().toISOString(),
+    trial_number:          trialNumber,
+    phase:                 phase,
+    span_level:            span,
+    num_blocks_on_screen:  config.numBlocks,
+    highlight_duration_ms: config.litDuration,
+    sequence_shown:        currentSequence.join('-'),
+    target_response:       target.join('-'),
+    participant_response:  playerInput.join('-'),
+    correct:               correct ? 1 : 0,
+  });
+}
+
+function downloadCSV(fromExit = false) {
+  if (!log.length) {
+    if (!fromExit) alert('No data to download.');
+    return;
+  }
+  const headers = Object.keys(log[0]);
+  const csv = [headers.join(','), ...log.map(r => headers.map(h => r[h]).join(','))].join('\n');
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })),
+    download: `corsi_${config.participantId}_${fromExit ? 'PARTIAL_' : ''}${Date.now()}.csv`
+  });
+  a.click();
+}
+
+// ── HUD + RESULTS ─────────────────────────────────────────────────────────────
+function updateHUD() {
+  document.getElementById('hud-span').textContent    = span;
+  document.getElementById('hud-trial').textContent   = trialNumber;
+  document.getElementById('hud-correct').textContent = totalCorrect;
+  const ind = document.getElementById('mode-indicator');
+  ind.textContent = phase === 'forward' ? 'Forward' : 'Backward';
+  ind.className = 'mode-indicator ' + phase;
+}
+
+function setStatus(msg, cls) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.className = 'status-bar ' + (cls || '');
+}
+
+function showResults() {
+  const grid = document.getElementById('score-grid');
+  if (config.endscreen === 'score') {
+    grid.style.display = 'grid';
+    if (config.version === 'both') {
+      grid.innerHTML = `
+        <div class="score-box"><div class="label">Forward Span</div><div class="value">${forwardSpan}</div></div>
+        <div class="score-box"><div class="label">Backward Span</div><div class="value">${backwardSpan}</div></div>
+        <div class="score-box" style="grid-column:1/-1"><div class="label">Total Correct Trials</div><div class="value">${totalCorrect}</div></div>`;
+    } else {
+      const lbl = config.version === 'forward' ? 'Forward Span' : 'Backward Span';
+      const val = config.version === 'forward' ? forwardSpan : backwardSpan;
+      grid.innerHTML = `<div class="score-box" style="grid-column:1/-1"><div class="label">${lbl}</div><div class="value">${val}</div></div>`;
+    }
+  } else {
+    grid.style.display = 'none';
+  }
+  showScreen('results-screen');
+}
+</script>
+</body>
+</html>
